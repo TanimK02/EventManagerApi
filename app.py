@@ -18,6 +18,7 @@ def create_app():
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["SECRET_KEY"] = "123123123"
     app.config["SESSION_TYPE"] = "filesystem"
     app.config.update(
     SESSION_COOKIE_SECURE=True,
