@@ -3,10 +3,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from models import PlannerModel
 from schemas import PlannerSchema
 from db import db
-from flask import request, session
+from flask import request, jsonify, current_app, g
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 from flask_smorest import Blueprint, abort
 import re
 import bcrypt
+
 
 planner_blp = Blueprint("Planners", "planners", description="Operations on planners")
 
@@ -71,7 +73,17 @@ class PlannerLogin(MethodView):
         except SQLAlchemyError:
             abort(404, message="User does not exist")
         if bcrypt.checkpw(user_info["password"].encode('utf-8'), user.password):
-            session["user_id"] = user.id
-            return {"message": "logged in"}, 200
+            access_token = create_access_token(identity=user.id)
+            return jsonify(access_token=access_token)
         else:
             abort(401)
+
+
+@planner_blp.route("/planner_logout")
+class PlannerLogout(MethodView):
+
+    @jwt_required()
+    def delete(self):
+        jti = get_jwt()["jti"]
+        current_app.jwt_redis_blocklist.set(jti, "", ex=current_app.jwt_exp)
+        return jsonify(msg="Access token expired.")
