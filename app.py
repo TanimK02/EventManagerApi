@@ -1,11 +1,14 @@
 from datetime import timedelta
 import redis
-from flask import Flask, request, g
-from flask_smorest import Api
+from flask import Flask, request
+from flask_smorest import Api, abort
 from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, get_jwt
+from models import PlannerModel, UserModel
+from sqlalchemy.exc import SQLAlchemyError
 from db import db
 from resources.planner import planner_blp
+from resources.user import user_blp
 
 ACCESS_EXPIRES = timedelta(hours=2)
 
@@ -43,6 +46,19 @@ def create_app():
         jti = jwt_payload["jti"]
         token_in_redis = app.jwt_redis_blocklist.get(jti)
         return token_in_redis is not None
+
+    @jwt.user_lookup_loader
+    def user_lookup_callback(_jwt_header, jwt_data):
+        identity = jwt_data["sub"]
+        try:
+            if jwt_data["Model"] == "Planner":
+                return db.session.execute(db.select(PlannerModel).where(PlannerModel.id==identity)).scalar_one()
+            elif jwt_data["Model"] == "User":
+                return db.session.execute(db.select(UserModel).where(UserModel.id==identity)).scalar_one()
+        except SQLAlchemyError:
+            abort(400, message="User doesn't exist")
+        
+    
     
     db.init_app(app)
     migrate = Migrate(app, db)
@@ -51,7 +67,7 @@ def create_app():
 
     api = Api(app)
     api.register_blueprint(planner_blp)
-
-
-
+    api.register_blueprint(user_blp)
+    
+    
     return app
