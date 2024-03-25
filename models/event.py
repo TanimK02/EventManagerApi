@@ -11,6 +11,8 @@ class EventModel(db.Model):
     title: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str] = mapped_column(String(), nullable=True)
     price: Mapped[Optional[int]] = mapped_column(nullable=True)
+    max_attendants: Mapped[Optional[int]] = mapped_column(nullable=True)
+    attendants: Mapped[Optional[int]] = mapped_column(default=0)
     creator: Mapped[str] = mapped_column(String(), nullable=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("planners.id"))
     editors_id: Mapped[str] = mapped_column(String(), nullable=True)
