@@ -13,3 +13,4 @@ class UserModel(db.Model):
     password: Mapped[str] = mapped_column(nullable=False)
     name: Mapped[str] = mapped_column(nullable=False)
     pic_url: Mapped[str] = mapped_column(nullable=True)
+    reviews = relationship("ReviewModel", lazy='dynamic', cascade="all, delete")

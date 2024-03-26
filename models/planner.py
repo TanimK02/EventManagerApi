@@ -13,3 +13,4 @@ class PlannerModel(db.Model):
     password: Mapped[str] = mapped_column(nullable=False)
     name: Mapped[str] = mapped_column(nullable=False)
     pic_url: Mapped[str] = mapped_column(nullable=True)
+    events = relationship("EventModel", lazy='dynamic', cascade="all, delete")

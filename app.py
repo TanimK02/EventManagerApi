@@ -9,6 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from db import db
 from resources.planner import planner_blp
 from resources.user import user_blp
+from resources.events import blp as EventBlp
 
 ACCESS_EXPIRES = timedelta(hours=2)
 
@@ -26,6 +27,7 @@ def create_app():
     ] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ECHO"] = True
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["JWT_SECRET_KEY"] = "123123123"
     app.config["SESSION_TYPE"] = "filesystem"
@@ -68,6 +70,6 @@ def create_app():
     api = Api(app)
     api.register_blueprint(planner_blp)
     api.register_blueprint(user_blp)
-    
+    api.register_blueprint(EventBlp)
     
     return app
