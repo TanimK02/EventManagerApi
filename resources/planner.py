@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from sqlalchemy.exc import SQLAlchemyError
-from models import PlannerModel
-from schemas import PlannerSchema
+from models import PlannerModel, EventModel
+from schemas import PlannerSchema, EventSchema
 from db import db
 from flask import request, jsonify, current_app, g
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt
@@ -88,3 +88,25 @@ class PlannerLogout(MethodView):
         jti = get_jwt()["jti"]
         current_app.jwt_redis_blocklist.set(jti, "", ex=current_app.jwt_exp)
         return jsonify(msg=f"Access token expired.")
+
+
+@planner_blp.route("/user:<int:user_id>/my_events")
+class MyEvents(MethodView):
+
+    @jwt_required()
+    @planner_blp.response(200, EventSchema(many=True))
+    def get(self, user_id):
+        user = get_jwt()
+        if user["Model"] != "Planner":
+            abort(401, message="Need a planner account to delete.")
+        if user["sub"] != user_id:
+            abort(404, message="Not found.")
+        results = None
+        user = None
+        try:
+            user = db.session.execute(db.select(PlannerModel).where(PlannerModel.id==user_id)).scalar_one()
+        except SQLAlchemyError:
+            abort(404, message="User not found")
+        return user.events
+
+    

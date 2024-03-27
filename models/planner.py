@@ -3,7 +3,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey
 
 
-
 class PlannerModel(db.Model):
     __tablename__ = "planners"
 
