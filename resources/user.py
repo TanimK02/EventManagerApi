@@ -4,7 +4,7 @@ from models import UserModel
 from schemas import UserSchema
 from db import db
 from flask import request, jsonify, current_app
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt, current_user
 from flask_smorest import Blueprint, abort
 import re
 import bcrypt
@@ -88,3 +88,18 @@ class UserLogout(MethodView):
         jti = get_jwt()["jti"]
         current_app.jwt_redis_blocklist.set(jti, "", ex=current_app.jwt_exp)
         return jsonify(msg=f"Access token expired.")
+
+
+@user_blp.route("/account_delete")
+class UserDelete(MethodView):
+
+    @jwt_required()
+    def delete(self):
+        user = current_user
+        try:
+            db.session.delete(user)
+            db.session.commit()
+        except SQLAlchemyError:
+            abort(400, message="Something went wrong while deleting the user.")
+
+        return {"message": "Account deleted."}
