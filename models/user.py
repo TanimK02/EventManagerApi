@@ -14,3 +14,4 @@ class UserModel(db.Model):
     name: Mapped[str] = mapped_column(nullable=False)
     pic_url: Mapped[str] = mapped_column(nullable=True)
     reviews = relationship("ReviewModel", lazy='dynamic', cascade="all, delete")
+    events = relationship("EventModel", back_populates='registered', secondary="user_events", lazy='dynamic')

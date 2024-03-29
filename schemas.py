@@ -19,11 +19,28 @@ class UserSchema(Schema):
     email = fields.Str(required=True)
     password = fields.Str(required=True)
     name = fields.Str(required=True)
-
+    
 class EventSchema(Schema):
     id = fields.Int(dump_only=True)
     creator = fields.Str(dump_only=True)
     creator_id = fields.Int(dump_only=True)
+    title = fields.Str(required=True)
+    date = fields.Date(required=False)
+    description = fields.Str(required=True)
+    price = fields.Int(required=False)
+    max_attendants = fields.Int(required=False)
+    attendants = fields.Int(dump_only=True)
+    editors = fields.List(fields.Nested(ItterPlannerSchema()), dump_only=True)
+    status = fields.Str(required=False)
+    created_at = fields.Date(dump_only=True)
+    updated_at = fields.Date(dump_only=True)
+    published_at = fields.Date(dump_only=True)
+    rating = fields.Dict(dump_only=True)
+    
+
+class EventSchema_Editors(Schema):
+    id = fields.Int(dump_only=True)
+    creator = fields.Str(dump_only=True)
     title = fields.Str(required=True)
     date = fields.Date(required=False)
     description = fields.Str(required=True)
@@ -73,3 +90,12 @@ class EventEditSchema(Schema):
 
 class EditorSchema(Schema):
     editors = fields.List(fields.Str(required=True))
+
+
+class ReviewSchema(Schema):
+    id = fields.Int(dump_only=True)
+    event_id = fields.Int(required=True)
+    rating = fields.Int(required=True)
+    comment = fields.Str(required=True)
+    created_at = fields.Date(dump_only=True)
+    updated_at = fields.Date(dump_only=True)

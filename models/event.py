@@ -11,7 +11,7 @@ class EventModel(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     creator: Mapped[str] = mapped_column(String(), nullable=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("planners.id"))
-    editors = relationship("PlannerModel", secondary="event_editors")
+    editors = relationship("PlannerModel", back_populates='events', secondary="event_editors")
     title: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     description: Mapped[str] = mapped_column(String(), nullable=True)
     date: Mapped[Optional[datetime.date]]
@@ -22,12 +22,8 @@ class EventModel(db.Model):
     updated_at: Mapped[Optional[datetime.date]]
     published_at: Mapped[Optional[datetime.date]]
     published = mapped_column(Boolean(), default=False)
-    rating = mapped_column(JSON(), default={
-    "1_star": 0,
-    "2_star": 0,
-    "3_star": 0,
-    "4_star": 0,
-    "5_star": 0
-    })
+    rating: Mapped[float] = mapped_column(nullable=False, default=0)
+    ratings = relationship("RatingsModel", lazy="dynamic", cascade="all, delete")
     reviews = relationship("ReviewModel", lazy='dynamic', cascade="all, delete")
+    registered = relationship("UserModel", back_populates='events', secondary="user_events", lazy='dynamic')
     status: Mapped[str] = mapped_column(String(), nullable=True)

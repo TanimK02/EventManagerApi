@@ -10,6 +10,7 @@ from db import db
 from resources.planner import planner_blp
 from resources.user import user_blp
 from resources.events import blp as EventBlp
+from resources.user_events import blp as UserEventBlp
 
 ACCESS_EXPIRES = timedelta(hours=2)
 
@@ -71,5 +72,6 @@ def create_app():
     api.register_blueprint(planner_blp)
     api.register_blueprint(user_blp)
     api.register_blueprint(EventBlp)
-    
+    api.register_blueprint(UserEventBlp)
+
     return app

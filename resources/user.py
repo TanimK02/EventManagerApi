@@ -3,7 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from models import UserModel
 from schemas import UserSchema
 from db import db
-from flask import request, jsonify, current_app, g
+from flask import request, jsonify, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 from flask_smorest import Blueprint, abort
 import re

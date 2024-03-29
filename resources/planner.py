@@ -1,9 +1,9 @@
 from flask.views import MethodView
 from sqlalchemy.exc import SQLAlchemyError
-from models import PlannerModel, EventModel
-from schemas import PlannerSchema, EventSchema
+from models import PlannerModel
+from schemas import PlannerSchema, EventSchema_Editors
 from db import db
-from flask import request, jsonify, current_app, g
+from flask import request, jsonify, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 from flask_smorest import Blueprint, abort
 import re
@@ -94,7 +94,7 @@ class PlannerLogout(MethodView):
 class MyEvents(MethodView):
 
     @jwt_required()
-    @planner_blp.response(200, EventSchema(many=True))
+    @planner_blp.response(200, EventSchema_Editors(many=True))
     def get(self, user_id):
         user = get_jwt()
         if user["Model"] != "Planner":
