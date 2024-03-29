@@ -35,7 +35,7 @@ class EventSchema(Schema):
     created_at = fields.Date(dump_only=True)
     updated_at = fields.Date(dump_only=True)
     published_at = fields.Date(dump_only=True)
-    rating = fields.Dict(dump_only=True)
+    rating = fields.Int(dump_only=True)
     
 
 class EventSchema_Editors(Schema):
@@ -52,7 +52,7 @@ class EventSchema_Editors(Schema):
     created_at = fields.Date(dump_only=True)
     updated_at = fields.Date(dump_only=True)
     published_at = fields.Date(dump_only=True)
-    rating = fields.Dict(dump_only=True)
+    rating = fields.Int(dump_only=True)
 
 
 class EventResponseSchema(Schema):
@@ -66,7 +66,7 @@ class EventResponseSchema(Schema):
     attendants = fields.Int(dump_only=True)
     updated_at = fields.Date(dump_only=True)
     published_at = fields.Date(dump_only=True)
-    rating = fields.Dict(dump_only=True)
+    rating = fields.Int(dump_only=True)
     status = fields.Str(dump_only=True)
 
 
@@ -85,7 +85,7 @@ class EventEditSchema(Schema):
     created_at = fields.Date(dump_only=True)
     updated_at = fields.Date(dump_only=True)
     published_at = fields.Date(dump_only=True)
-    rating = fields.Dict(dump_only=True)
+    rating = fields.Int(dump_only=True)
 
 
 class EditorSchema(Schema):
@@ -94,8 +94,7 @@ class EditorSchema(Schema):
 
 class ReviewSchema(Schema):
     id = fields.Int(dump_only=True)
-    event_id = fields.Int(required=True)
-    rating = fields.Int(required=True)
+    rate = fields.Int(required=True)
     comment = fields.Str(required=True)
     created_at = fields.Date(dump_only=True)
     updated_at = fields.Date(dump_only=True)

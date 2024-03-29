@@ -45,14 +45,6 @@ class ViewEvent(MethodView):
         return event
 
 
-    # @blp.response(200, EventResponseSchema)
-    # def get(self, event_id):
-    #     event = db.session.execute(db.select(EventModel).where(EventModel.id==event_id).where(EventModel.published_at!=None)).scalar_one_or_none()
-    #     if not event:
-    #         abort(404, message="Does not exist.")
-    #     return event
-
-
 @blp.route("/delete_event/<int:event_id>")
 class DeleteEvent(MethodView):
     @jwt_required()

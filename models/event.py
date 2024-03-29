@@ -11,8 +11,8 @@ class EventModel(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     creator: Mapped[str] = mapped_column(String(), nullable=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("planners.id"))
-    editors = relationship("PlannerModel", back_populates='events', secondary="event_editors")
-    title: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    editors = relationship("PlannerModel", back_populates='edit_events', secondary="event_editors")
+    title: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str] = mapped_column(String(), nullable=True)
     date: Mapped[Optional[datetime.date]]
     price: Mapped[Optional[float]] = mapped_column(nullable=True)

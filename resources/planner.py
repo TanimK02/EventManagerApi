@@ -107,6 +107,7 @@ class MyEvents(MethodView):
             user = db.session.execute(db.select(PlannerModel).where(PlannerModel.id==user_id)).scalar_one()
         except SQLAlchemyError:
             abort(404, message="User not found")
-        return user.events
+        results = user.events.all() + user.edit_events.all()
+        return results
 
     

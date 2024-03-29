@@ -10,7 +10,7 @@ class ReviewModel(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     event_id: Mapped[int] = mapped_column(ForeignKey("events.id"))
     rating = relationship("RatingsModel", back_populates="review", lazy='dynamic', cascade="all, delete")
-    rate = Mapped[int] = mapped_column(nullable=False)
+    rate: Mapped[int] = mapped_column(nullable=False)
     comment: Mapped[str] = mapped_column(String(), nullable=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[Optional[datetime.date]]

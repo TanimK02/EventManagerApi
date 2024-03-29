@@ -1,11 +1,11 @@
 from datetime import date
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from flask_jwt_extended import jwt_required, get_jwt, current_user, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt, current_user
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from models import EventModel, user_events, RatingsModel, ReviewModel
-from schemas import ReviewSchema
+from schemas import ReviewSchema, EventResponseSchema
 from db import db
 
 
@@ -22,6 +22,8 @@ class RegisterEvent(MethodView):
             abort(400, message="Need account to register")
         user_data = current_user
         event = db.get_or_404(EventModel, event_id)
+        if event.published != 1:
+            abort(404, message="Event not found.")
         check = db.session.execute(db.select(user_events).where(user_events.c.user==user["sub"]).where(user_events.c.event==event.id)).first()
         print(check)
         if check:
@@ -46,6 +48,8 @@ class UnregisterEvent(MethodView):
             abort(400, message="Need account to unregister")
         user_data = current_user
         event = db.get_or_404(EventModel, event_id)
+        if event.published != 1:
+            abort(404, message="Event not found.")
         check = db.session.execute(db.select(user_events).where(user_events.c.user==user["sub"]).where(user_events.c.event==event.id)).first()
         print(check)
         if not check:
@@ -60,14 +64,17 @@ class UnregisterEvent(MethodView):
         return {"message": "Unregistered"}
     
 
-@blp.route("/leave_review/<int:event_id")
+@blp.route("/leave_review/<int:event_id>")
 class LeaveReview(MethodView):
 
     @jwt_required()
     @blp.arguments(ReviewSchema)
     def post(self, review_data, event_id):
         user = get_jwt()
-        rate = review_data.pop("rating")
+        rate = review_data.pop("rate")
+        event = db.get_or_404(EventModel, event_id)
+        if event.published != 1:
+            abort(404, message="Event not found.")
         rating = None
         if user["Model"] != "User":
             abort(400, message="Need account to leave review.")
@@ -90,18 +97,22 @@ class LeaveReview(MethodView):
         except SQLAlchemyError:
             abort(400, message="Something went wrong while processing review")
         if review:
-            review.comment(review_data["comment"])
+            review.comment=review_data["comment"]
             review.rate = rate
+            review.updated_at = date.today()
         else:
             review = ReviewModel(**review_data)
+            review.event_id = event_id
             review.rate = rate
+            review.creator_id = user["sub"]
+            review.created_at = date.today()
         review.rating.append(rating)
         try:
             db.session.add(review)
             db.session.commit()
         except SQLAlchemyError:
             abort(400, message="Something went wrong while processing review")
-        
+        reset_rating(event_id=event_id)
         return {"message": "Review added"}
     
 
@@ -123,7 +134,7 @@ class DeleteReview(MethodView):
             db.session.delete(review)
         else:
             abort(400, message="Review doesn't exist.")
-
+        reset_rating(event_id=event_id)
         return {"message": "Review deleted."}
     
 
@@ -134,6 +145,9 @@ class LeaveRate(MethodView):
     def post(self, event_id, rate):
         user = get_jwt()
         rating = None
+        event = db.get_or_404(EventModel, event_id)
+        if event.published != 1:
+            abort(404, message="Event not found.")
         if user["Model"] != "User":
             abort(400, message="Need account to leave rating.")
         try:
@@ -163,7 +177,7 @@ class LeaveRate(MethodView):
             db.session.commit()
         except SQLAlchemyError:
             abort(400, message="Something went wrong while processing the rating")
-        
+        reset_rating(event_id=event_id)
         return {"message": "Added rating."}
 
 
@@ -188,11 +202,46 @@ class DeleteRating(MethodView):
             db.session.commit()
         except SQLAlchemyError:
             abort(400, message="Something went wrong while deleting the rating")
+        reset_rating(event_id=event_id)
         return {"message": "Deleted rating and review if left there."}
     
 
-@blp.route("/view_reviews/<int:event_id")
+@blp.route("/view_reviews/<int:event_id>")
 class ViewReviews(MethodView):
 
+    @blp.response(200, ReviewSchema(many=True))
+    def get(self, event_id):
+        event = db.session.execute(db.select(EventModel).where(EventModel.id==event_id)).scalar_one()
+        return event.reviews
+    
+
+@blp.route("/events")
+class ViewEvents(MethodView):
+
+    @blp.response(200, EventResponseSchema(many=True))
     def get(self):
-        pass
+        return db.session.execute(db.select(EventModel).where(EventModel.published==1).order_by(desc(EventModel.published_at))).scalars()
+    
+
+@blp.route("/event/<int:event_id>")
+class ViewSingleEvent(MethodView):
+
+    @blp.response(200, EventResponseSchema)
+    def get(self, event_id):
+        event = db.session.execute(db.select(EventModel).where(EventModel.id==event_id).where(EventModel.published_at!=None)).scalar_one_or_none()
+        if not event or event.published != 1:
+            abort(404, message="Does not exist.")
+        return event
+
+
+def reset_rating(event_id):
+    event = db.session.execute(db.select(EventModel).where(EventModel.id==event_id)).scalar_one_or_none()
+    if event:
+        ratings = db.session.execute(db.select(func.avg(RatingsModel.rating)).where(RatingsModel.event==event_id)).all()
+        if ratings[0][0]:
+            event.rating = ratings[0][0]
+        else:
+            event.rating = 0
+    db.session.commit()
+        
+    

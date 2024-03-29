@@ -5,7 +5,7 @@ from typing import Optional
 
 
 class RatingsModel(db.Model):
-    __tablename__ = "likes"
+    __tablename__ = "ratings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
