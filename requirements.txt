@@ -11,3 +11,4 @@ alembic
 flask-migrate
 bcrypt
 sendgrid
+Celery
