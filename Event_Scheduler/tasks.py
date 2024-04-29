@@ -36,7 +36,7 @@ def send_mail():
                 user_page = 0
                 user_amount = 100
                 while True:
-                    users = session.execute(select(UserModel).join(EventModel.users).
+                    users = session.execute(select(UserModel).join(EventModel.registered).
                                             where(EventModel.id==event.id).offset(user_page*user_amount).limit(user_amount)).scalars().all()
                     if len(users) == 0:
                         break
