@@ -1,4 +1,5 @@
 from datetime import date
+from flask import current_app
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from flask_jwt_extended import jwt_required, get_jwt, current_user
@@ -7,7 +8,9 @@ from sqlalchemy import desc, func
 from models import EventModel, user_events, RatingsModel, ReviewModel
 from schemas import ReviewSchema, EventResponseSchema
 from db import db
-
+import ssl
+import smtplib
+from email.message import EmailMessage
 
 blp = Blueprint("User_Events", "user_events", description="User operations on events")
 
@@ -35,6 +38,27 @@ class RegisterEvent(MethodView):
         except SQLAlchemyError:
             abort(400, message="Something went wrong while registering for event")
 
+        try:
+            email_sender = current_app.config["EMAIL"]
+            email_pass = current_app.config["PASSWORD"]
+            email_receiver = current_user.email
+
+            subject = f"Registered for {event.title}"
+            body = f"You successfully registered for {event.title}. Don't forget its on {event.date}. Don't miss it."
+            em = EmailMessage()
+            em["From"] = email_sender
+            em["To"] = email_receiver
+            em["Subject"] = subject
+            em.set_content(body)
+
+            context = ssl.create_default_context()
+
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+                smtp.login(email_sender, email_pass)
+                smtp.sendmail(email_sender, email_receiver, em.as_string())
+        except:
+            abort(400, message="Something went wrong with the confirmation email.")
+
         return {"message": "Registered"}
 
 
@@ -60,6 +84,27 @@ class UnregisterEvent(MethodView):
             db.session.commit()
         except SQLAlchemyError:
             abort(400, message="Something went wrong while unregistering for event")
+
+        try:
+            email_sender = current_app.config["EMAIL"]
+            email_pass = current_app.config["PASSWORD"]
+            email_receiver = current_user.email
+
+            subject = f"Registered for {event.title}"
+            body = f"You have been unregistered from {event.title}."
+            em = EmailMessage()
+            em["From"] = email_sender
+            em["To"] = email_receiver
+            em["Subject"] = subject
+            em.set_content(body)
+
+            context = ssl.create_default_context()
+
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+                smtp.login(email_sender, email_pass)
+                smtp.sendmail(email_sender, email_receiver, em.as_string())
+        except:
+            abort(400, message="Something went wrong with the confirmation email.")
 
         return {"message": "Unregistered"}
     

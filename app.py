@@ -1,4 +1,5 @@
 from datetime import timedelta
+from os import environ
 import redis
 from flask import Flask, request
 from flask_smorest import Api, abort
@@ -11,6 +12,8 @@ from resources.planner import planner_blp
 from resources.user import user_blp
 from resources.events import blp as EventBlp
 from resources.user_events import blp as UserEventBlp
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 ACCESS_EXPIRES = timedelta(hours=2)
 
@@ -33,6 +36,8 @@ def create_app():
     app.config["JWT_SECRET_KEY"] = "123123123"
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
+    app.config["EMAIL"] = environ.get("EMAIL")
+    app.config["PASSWORD"] = environ.get("PASSWORD")
     app.jwt_exp = ACCESS_EXPIRES
     app.config.update(
     SESSION_COOKIE_SECURE=True,

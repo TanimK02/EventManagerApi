@@ -103,3 +103,4 @@ class UserDelete(MethodView):
             abort(400, message="Something went wrong while deleting the user.")
 
         return {"message": "Account deleted."}
+    

@@ -88,6 +88,7 @@ class EditEvent(MethodView):
                 event.price = event_data.get("price", event.price)
                 event.max_attendants = event_data.get("max_attendants", event.max_attendants)
                 event.updated_at = date.today()
+                event.date = event_data.get("date", event.date)
                 db.session.add(event)
                 db.session.commit()
             except SQLAlchemyError:
