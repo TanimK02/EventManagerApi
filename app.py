@@ -29,7 +29,7 @@ def create_app():
     app.config[
         "OPENAPI_SWAGGER_UI_URL"
     ] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("SQLITE_DB_PATH")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SQLALCHEMY_ECHO"] = True
     app.config["PROPAGATE_EXCEPTIONS"] = True
@@ -47,7 +47,7 @@ def create_app():
     jwt = JWTManager(app)
     
     app.jwt_redis_blocklist = redis.StrictRedis(
-    host="localhost", port=6379, db=0, decode_responses=True)
+    host="redis", port=6379, db=0, decode_responses=True)
 
     @jwt.token_in_blocklist_loader
     def check_if_token_is_revoked(jwt_header, jwt_payload: dict):

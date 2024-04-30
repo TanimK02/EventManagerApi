@@ -9,18 +9,18 @@ from email.message import EmailMessage
 from os import environ
 
 # incase you wanna debug
-# import logging
+import logging
 
-# from celery.utils.log import get_task_logger
+from celery.utils.log import get_task_logger
 
-# logger = get_task_logger(__name__)
+logger = get_task_logger(__name__)
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 @shared_task(name='tasks.send_mail')
 def send_mail():
-
-    engine = create_engine("sqlite:////tmp/test.db")
+    
+    engine = create_engine(environ.get("SQLITE_DB_PATH"))
     Base.metadata.create_all(engine)
 
     list_amount = 100
@@ -45,7 +45,7 @@ def send_mail():
                             email_sender = environ.get("EMAIL")
                             email_pass = environ.get("PASSWORD")
                             email_receiver = user.email
-                            # logger.info(' email: %s password: %s ', email_sender, email_pass)
+                            logger.info(' email: %s password: %s ', email_sender, email_pass)
                             # incase you want to debug
                             subject = f"Reminder for {event.title}"
                             body = f"Don't forget to come to {event.title}. Its on {event.date}. Don't miss it."
@@ -59,7 +59,7 @@ def send_mail():
 
                             with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
                                 smtp.starttls()
-                                # smtp.set_debuglevel(10)
+                                smtp.set_debuglevel(10)
                                 # incase you wanna debug
                                 smtp.login(email_sender, email_pass)
                                 smtp.sendmail(email_sender, email_receiver, em.as_string())
